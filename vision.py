@@ -1,8 +1,9 @@
+import time
+
 import cv2 as cv
 import numpy as np
 from hsvfilter import HsvFilter
 from edgefilter import EdgeFilter
-import pyscreenshot as ImageGrab
 
 
 class Vision:
@@ -31,11 +32,22 @@ class Vision:
 
     def find(self, haystack_img, threshold=0.8, max_results=10):
         # run the OpenCV algorithm
+        if self.needle_img is None or haystack_img is None:
+            print("Images not loaded correctly")
+            return
+        haystack_img = cv.cvtColor(haystack_img, cv.COLOR_BGR2GRAY)
+        self.needle_img = self.needle_img.astype('uint8')
+        haystack_img = haystack_img.astype('uint8')
+
+        # Ensure the source image is 2D
+        if len(haystack_img.shape) > 2:
+            haystack_img = cv.cvtColor(haystack_img, cv.COLOR_BGR2GRAY)
+
         result = cv.matchTemplate(haystack_img, self.needle_img, self.method)
         # Get the all the positions from the match result that exceed our threshold
         locations = np.where(result >= threshold)
         locations = list(zip(*locations[::-1]))
-        #print(locations)
+        # print(locations)
 
         # if we found no results, return now. this reshape of the empty array allows us to 
         # concatenate together results without causing an error

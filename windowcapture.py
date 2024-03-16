@@ -3,7 +3,6 @@ import cv2
 import pyscreenshot as ImageGrab
 
 
-
 class WindowCapture:
 
     # properties
