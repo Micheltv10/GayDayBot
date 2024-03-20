@@ -2,7 +2,6 @@ import numpy as np
 import cv2
 from ppadb.client import Client as AdbClient
 
-
 class WindowCapture:
     # properties
     w = 1920
