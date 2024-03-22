@@ -10,12 +10,11 @@ class Vision:
 
     def __init__(self, method=cv.TM_CCOEFF_NORMED):
         self.method = method
-        self.device = wc.WindowCapture()
-
+        self.wc = wc.WindowCapture()
     def findOne(self, template_image_path: str, threshold: float = 0.4):
         template_image_path = "img/" + template_image_path
         template_image = cv.imread(template_image_path, cv.IMREAD_COLOR)
-        game_screenshot = self.device.get_frame()
+        game_screenshot = self.wc.get_frame()
 
         template_image = template_image.astype(np.uint8)
 
@@ -24,13 +23,16 @@ class Vision:
 
         search_result = cv.matchTemplate(game_screenshot, template_image, cv.TM_CCOEFF_NORMED)
         min_val, max_val, min_loc, max_loc = cv.minMaxLoc(search_result)
-        rect = [max_loc[0], max_loc[1], template_image.shape[1], template_image.shape[0]]
-        return rect
-    def find(self, template_image_path: str, threshold: float = 0.45, max_results: int=42):
+        print(f"Max value: {max_val}, location: {max_loc}")
+        # draw rect
+        screenshot = cv.rectangle(game_screenshot, max_loc, (max_loc[0] + template_image.shape[1], max_loc[1] + template_image.shape[0]), (0, 255, 0), 2)
+        return screenshot, max_loc, max_val
+    
+    def find(self, template_image_path: str, threshold: float = 0.5, max_results: int=42):
             template_image_path = "img/" + template_image_path
             print(f"{template_image_path} search")
             template_image = cv.imread(template_image_path, cv.IMREAD_COLOR)  # Load template image in color
-            game_screenshot = self.device.get_frame()  # Take a screenshot
+            game_screenshot = self.wc.get_frame()  # Take a screenshot
             # Ensure both images have the same data type
             template_image = template_image.astype(np.uint8)
             # Ensure both images have the same number of color channels
@@ -63,4 +65,12 @@ class Vision:
             for (startX, startY, endX, endY) in rectangles:
                 cv.rectangle(game_screenshot, (startX, startY), (endX, endY), (255, 255, 0), 2)
                 # show the output image with the rectangle drawn on it
+            for i, (startX, startY, endX, endY) in enumerate(rectangles):
+                cv.rectangle(game_screenshot, (startX, startY), (endX, endY), (255, 255, 0), 2)
+                text = f"Rechteck {i+1}"
+                cv.putText(game_screenshot, text, (startX, startY - 10), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 2)
+            # Das Bild mit dem gezeichneten Rechteck und den Koordinaten anzeigen
+            cv.imshow("Ergebnis", game_screenshot)
+            cv.waitKey(0)
+
             return game_screenshot, rectangles
